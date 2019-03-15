@@ -1,0 +1,25 @@
+- name: CentOS - Install Dependencies
+  yum:
+    name: "yum-utils"
+    state: present
+
+- name: CentOS - upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+- name: CentOS - Check for reboot required
+  shell: needs-restarting -r
+  register: reboot_req
+  ignore_errors: yes
+  
+- name: CentOS - Reboot needed
+  set_fact:
+    needs_reboot: True
+  when: reboot_req.rc == 1
+    
+- name: CentOS - Re-Generating GRUB config
+  command: grub2-mkconfig
+
+- name: Send Notification
+  include_tasks: notification.yml

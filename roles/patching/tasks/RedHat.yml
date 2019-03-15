@@ -1,0 +1,47 @@
+- name: RedHat - RHEL6 Dependency
+  yum:
+    name: yum-plugin-security
+    state: latest
+  when: ansible_distribution_major_version == '6' 
+
+- name: RedHat - RHEL5 Dependency
+  yum:
+    name: yum-security
+    state: latest
+  when: ansible_distribution_major_version == '5' 
+
+- name: RedHat - Install Dependencies
+  yum:
+    name: "yum-utils"
+    state: present
+
+- name: RedHat - upgrade all packages required for security
+  yum:
+    name: '*'
+    security: yes
+    state: latest
+  when: (ansible_distribution == 'RedHat' or ansible_distribution == 'Oracle') and keep_version is not defined
+
+- name: RedHat - upgrade all packages required for security(Keeping Minor Version)
+  yum:
+    name: '*'
+    security: yes
+    state: latest
+    releasever: "{{ ansible_distribution_version }}"
+  when: (ansible_distribution == 'RedHat' or ansible_distribution == 'Oracle') and ansible_distribution_major_version|int >= 6 and keep_version is defined
+
+- name: RedHat - Check for reboot required
+  shell: needs-restarting -r
+  register: reboot_req
+  ignore_errors: yes
+  
+- name: RedHat - Reboot needed
+  set_fact:
+    needs_reboot: True
+  when: reboot_req.rc == 1
+    
+- name: RedHat - Re-Generating GRUB config
+  command: grub2-mkconfig
+
+- name: Send Notification
+  include_tasks: notification.yml

@@ -1,0 +1,27 @@
+- name: Ubuntu - Update repositories cache
+  apt:
+    update_cache: yes
+
+- name: Ubuntu - Install unattended-upgrades
+  package:
+    name: unattended-upgrades
+    state: latest
+
+- name: Ubuntu - Update security only
+  command: unattended-upgrade
+
+- name: Ubuntu - Check if reboot required
+  stat:
+    path: /var/run/reboot-required
+  register: stat_result
+    
+- name: Ubuntu - Reboot needed
+  set_fact:
+    needs_reboot: True
+  when: stat_result.stat.exists == True
+
+- name: Ubuntu - Re-generating GRUB
+  command: grub-mkconfig
+
+- name: Send Notification
+  include_tasks: notification.yml

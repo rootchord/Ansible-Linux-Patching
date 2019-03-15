@@ -1,0 +1,9 @@
+- name: SLES - Install all patches
+  zypper:
+    name: '*'
+    state: latest
+    type: patch
+    update_cache: yes
+
+- name: Send Notification
+  include_tasks: notification.yml

@@ -1,0 +1,55 @@
+- name: Send Completion Notification
+  office_365_connector_card:
+    webhook: "{{ teams_webhook }}"
+    text: "{{ ansible_hostname }} has been patched"
+  when: teams_webhook is defined 
+
+- name: Send Completion Notification(reboot required)
+  office_365_connector_card:
+    webhook: "{{ teams_webhook }}"
+    text: "{{ ansible_hostname }} has been patched and must be rebooted."
+  when: teams_webhook is defined and needs_reboot is defined
+
+- name: Send Completion Email Notification
+  mail:
+    host: smtp.esri.com
+    port: 25
+    username: "{{ ansible_email_username }}"
+    password: "{{ ansible_email_password }}"
+    to: "{{ owner_email_address }}"
+    subject: Ansible Patching 
+    body: "{{ ansible_hostname }} has been patched"
+  delegate_to: localhost
+  when: owner_email_address is defined and ansible_email_username is defined
+  
+- name: Send Completion Email Notification(reboot required)
+  mail:
+    host: smtp.esri.com
+    port: 25
+    username: "{{ ansible_email_username }}"
+    password: "{{ ansible_email_password }}"
+    to: "{{ owner_email_address }}"
+    subject: Ansible Patching 
+    body: "{{ ansible_hostname }} has been patched and must be rebooted."
+  delegate_to: localhost
+  when: owner_email_address is defined and ansible_email_username is defined and needs_reboot is defined
+
+- name: Send Completion Email Notification
+  mail:
+    host: smtp.esri.com
+    port: 25
+    to: "{{ owner_email_address }}"
+    subject: Ansible Patching 
+    body: "{{ ansible_hostname }} has been patched"
+  delegate_to: localhost
+  when: owner_email_address is defined and ansible_email_username is not defined
+  
+- name: Send Completion Email Notification(reboot required)
+  mail:
+    host: smtp.esri.com
+    port: 25
+    to: "{{ owner_email_address }}"
+    subject: Ansible Patching 
+    body: "{{ ansible_hostname }} has been patched and must be rebooted."
+  delegate_to: localhost
+  when: owner_email_address is defined and ansible_email_username is not defined and needs_reboot is defined
